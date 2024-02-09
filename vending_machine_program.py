@@ -70,7 +70,7 @@ def clear_terminal():
 
 def dispenser_refill_ingredients():
 	"""
-	=> This routine fills dispenser resources at maximum capacity
+	=> This routine fills coins_dispenser resources at maximum capacity
 	:return: current_resource: dictionary with ingredients filled
 	"""
 	dispenser_resources_capacity = {
@@ -95,7 +95,7 @@ def update_dispenser_container(user_drink):
 	"""
 	print(
 		f"\n===update_dispenser_container> BEFORE UPDATE drink: {user_drink}"
-		f"dispenser contains: \n{current_dispenser_resource}"
+		f"coins_dispenser contains: \n{current_dispenser_resource}"
 	)
 	"""
 	for res in INGREDIENTS:
@@ -106,7 +106,7 @@ def update_dispenser_container(user_drink):
 	"""
 	print(
 		f"\n===update_dispenser_container> AFTER UPDATE drink: {user_drink}"
-		f" dispenser contains: \n{current_dispenser_resource}"
+		f" coins_dispenser contains: \n{current_dispenser_resource}"
 	)
 	"""
 	return
@@ -171,11 +171,11 @@ def checkout_drink(drink):
 # ###################################################################################
 # ## ===u100d_coffee-machine=> Initialization
 # ###################################################################################
-# we need first to refill the dispenser ingredients
+# we need first to refill the coins_dispenser ingredients
 
 
 current_dispenser_resource = dispenser_refill_ingredients()
-one_drink = True  # Initially the dispenser is full so there is at least one drink to offer
+one_drink = True  # Initially the coins_dispenser is full so there is at least one drink to offer
 # print(current_dispenser_resource)
 
 # ###################################################################################
@@ -190,7 +190,7 @@ while one_drink:
 	# ###################################################################################
 	print(f"\n Welcome to the Python Drink Dispenser")
 	print(f"\n Below the following actions you can undertake at this time {date_stamp()} ")
-	print(f"If you have Admin authorisation you can launch a dispenser refill by typing /r ")
+	print(f"If you have Admin authorisation you can launch a coins_dispenser refill by typing /r ")
 	
 	for my_drink in ITD2_DRINKS:
 		if current_drink_availability[my_drink]:
@@ -225,6 +225,6 @@ while one_drink:
 	clear_terminal()
 		
 print(f"\n Urgent Python Drink Dispenser is Empty!!")
-print(f"Waiting for MAINTENANCE to launch a dispenser refill")
+print(f"Waiting for MAINTENANCE to launch a coins_dispenser refill")
 
 print(f"\n===u100d_coffee-machine=> <20240115-v1> exec@: {date_stamp()}")

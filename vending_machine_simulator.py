@@ -5,7 +5,7 @@ Vending Machine Simulator - version 20240209 v08
 It consists of the following elements:
 
 ### class MaterialsContainersDispenser:
-	=> This class handles the dispenser of containers where each container is associated to a
+	=> This class handles the coins_dispenser of containers where each container is associated to a
 	specific material (~ingredient such as coffee, water, milk, ...)
 	
 	## attributes:
@@ -30,7 +30,7 @@ It consists of the following elements:
 		def add_accepted_coin(self, coin, value):
 		
 ### Class Drinks Menu
-	=> This class deals with the drink dispenser OFFER that clients can purchase
+	=> This class deals with the drink coins_dispenser OFFER that clients can purchase
 	
 	## attributes:
 		drinks_menu is a dictionary with the following structure:
@@ -123,18 +123,18 @@ class MaterialsContainersDispenser:
 	
 	def exist_material_container(self, material: str) -> bool:
 		"""
-		=> This method checks if there is a dispenser allocated for a specific material.
+		=> This method checks if there is a coins_dispenser allocated for a specific material.
 		
 		:param material: The name of the material to check.
 		
-		:return: True if a dispenser exists for the material, False otherwise.
+		:return: True if a coins_dispenser exists for the material, False otherwise.
 		"""
 		
 		return material in self.materials_containers
 	
 	def allocate_material_container(self, material: str, capacity: int) -> bool:
 		"""
-		=> This method adds a new material container to the dispenser
+		=> This method adds a new material container to the coins_dispenser
 		It checks if the material container does not already exist
 		If not it will add the new container with the capacity indicated and sets volume to 0
 		
@@ -157,7 +157,7 @@ class MaterialsContainersDispenser:
 
 		:param material: The name of the material to get the capacity of its container.
 			
-		:return capacity: The capacity of the dispenser allocated for the material.
+		:return capacity: The capacity of the coins_dispenser allocated for the material.
 		If the material container does not exist, returns a negative (-1) capacity value.
 		"""
 		
@@ -173,8 +173,8 @@ class MaterialsContainersDispenser:
 		
 		:param material:
 		
-		:return volume: The volume of material available on it´s dispenser - If the material does
-		not have a dispenser the volume returned is negative number -1
+		:return volume: The volume of material available on it´s coins_dispenser - If the material does
+		not have a coins_dispenser the volume returned is negative number -1
 		"""
 		
 		if self.exist_material_container(material):
@@ -212,7 +212,6 @@ class MaterialsContainersDispenser:
 # ###################################################################################
 
 class AcceptedCoinsDispenser:
-	# TODO Fully encapsulate AcceptedCoinsDispenserClass
 	"""
 	=> This class is related to the payment of drinks with coins (no credit cards in this version)
 	
@@ -221,33 +220,45 @@ class AcceptedCoinsDispenser:
 		{coin_name string: coin_value float}
 	
 	## Methods
-		def add_accepted_coin(self, coin, value):
+		def exist_accepted_coin(self,coin: str) -> bool:
+		def add_accepted_coin(self, coin: str, value: float) -> bool:
+		def get_accepted_coins_value(self, coin: str) -> float:
 	
 	"""
 	
 	def __init__(self):
 		# Initialize coins dictionary
-		self.accepted_coins = {}
+		self.accepted_coins: Dict[str, float] = {}
 	
-	def add_accepted_coin(self, coin, value):
+	def exist_accepted_coins(self,coin: str) -> bool:
+		return coin in self.accepted_coins
+	
+	def add_accepted_coins(self, coin: str, value: float) -> bool:
 		"""
 		=> This method adds a new accepted coin if the coin is not yet already accepted
 		
 		:param coin: name of the coin
 		:param value: value in dollar/cents
 		
-		:return: True if coin is a new type False if coin already accepted by the dispenser
+		:return: True if coin is a new type False if coin already accepted by the coins_dispenser
 		"""
 		
 		# Check if the coin already exists
-		if coin in self.accepted_coins:
+		if self.exist_accepted_coins(coin):
 			return False
 		
 		# Add the coin with the specified value
 		self.accepted_coins[coin] = value
 		return True
 
-
+	def get_accepted_coins_value(self, coin: str) -> float:
+		if self.exist_accepted_coins(coin):
+			value = self.accepted_coins[coin]
+		else:
+			value = -1.
+		return value
+		
+		
 # ###################################################################################
 # ## ===vending_machine_simulator=> Drinks Menu
 # ###################################################################################
@@ -256,7 +267,7 @@ class AcceptedCoinsDispenser:
 class DrinksMenu:
 	# TODO Fully encapsulate DrinksMenu class
 	"""
-	=> This class deals with the drink dispenser OFFER that clients can purchase
+	=> This class deals with the drink coins_dispenser OFFER that clients can purchase
 	
 	=> attributes:
 		drinks_menu is a dictionary with the following structure:
@@ -426,7 +437,7 @@ class DrinksBusinessOperations:
 				print(
 					f"\n===DrinksBusinessOperations/update_drink_volume=> {date_stamp()}"
 					f" {drink} update failed - last drink served not enough {material}"
-					f" This should be considered as a dispenser program inconsistency"
+					f" This should be considered as a coins_dispenser program inconsistency"
 				)
 		if material_count == len(current_bom):
 			return True
@@ -490,7 +501,7 @@ class DrinksBusinessOperations:
 		if user_choice in self.drinks_menu:
 			user_drink = self.drinks_menu[user_choice]
 		else:
-			print(f" !!! Your selection is not recognized by the dispenser - Try again")
+			print(f" !!! Your selection is not recognized by the coins_dispenser - Try again")
 			user_drink = ''
 		return user_drink
 	
