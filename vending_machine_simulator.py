@@ -1,5 +1,5 @@
 """
-Vending Machine Simulator - version 20240208 v07
+Vending Machine Simulator - version 20240209 v08
 => This Module handles all classes/methods/attributes related to drink vending machines operations
 
 It consists of the following elements:
@@ -145,7 +145,7 @@ class MaterialsContainersDispenser:
 		"""
 		
 		# Check if the material already exists
-		if self.exist_material_container(self, material):
+		if self.exist_material_container(material):
 			return False
 		# Add the material with the specified maximum quantity
 		self.materials_containers[material] = {'capacity': capacity, 'volume': 0}
@@ -161,7 +161,7 @@ class MaterialsContainersDispenser:
 		If the material container does not exist, returns a negative (-1) capacity value.
 		"""
 		
-		if self.exist_material_container(self, material):
+		if self.exist_material_container(material):
 			capacity = self.materials_containers[material]['capacity']
 		else:
 			capacity = -1
@@ -177,7 +177,7 @@ class MaterialsContainersDispenser:
 		not have a dispenser the volume returned is negative number -1
 		"""
 		
-		if self.exist_material_container(self, material):
+		if self.exist_material_container(material):
 			volume = self.materials_containers[material]['volume']
 		else:
 			volume = -1
@@ -195,7 +195,7 @@ class MaterialsContainersDispenser:
 		:return volume: container capacity if container exist otherwise volume = -1
 		"""
 		
-		if self.exist_material_container(self, material):
+		if self.exist_material_container(material):
 			
 			# the container exist so we set volume = capacity
 			volume = MaterialsContainersDispenser.get_capacity_material_container(self, material)
@@ -544,8 +544,8 @@ class DrinksBusinessMaintenance:
 		# print(
 		# 	f"\n===DrinksBusinessMaintenance/add_admin_command=> @ {date_stamp()}"
 		# 	f"\n parameter control_command: <{control_command}>"
-		# 	f"\n variable control_command_keystroke: <{control_command_keystroke} "
-		# )
+		# 	f"\n variable control_command_keystroke: <{control_command_keystroke} ")
+
 		
 		for command in self.admin_maintenance_commands:
 			if command == control_command_keystroke:
@@ -589,4 +589,4 @@ class DrinksBusinessMaintenance:
 		return materials_volume
 
 
-print(f"\n===vending_machine_simulator=> Class/Methods/Attributes <20240208-v07> @ {date_stamp()}")
+print(f"\n===vending_machine_simulator=> Class/Methods/Attributes <20240209-v08> @ {date_stamp()}")

@@ -65,7 +65,7 @@ ERROR_CODES = {
 itd2_materials_dispenser = MaterialsContainersDispenser()
 for material in ITD2_MATERIALS_DISPENSER_CAPACITY:
 	dispenser_capacity = ITD2_MATERIALS_DISPENSER_CAPACITY[material]
-	mat_flag = itd2_materials_dispenser.add_material_container(
+	mat_flag = itd2_materials_dispenser.allocate_material_container(
 		material,
 		dispenser_capacity
 	)
