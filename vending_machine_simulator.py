@@ -1,5 +1,5 @@
 """
-Vending Machine Simulator - version 20240209 v08
+Vending Machine Simulator - version 20240210 v09
 => This Module handles all classes/methods/attributes related to drink vending machines operations
 
 It consists of the following elements:
@@ -120,6 +120,8 @@ class MaterialsContainersDispenser:
 	def __init__(self) -> None:
 		# Initialize the Materials dictionary
 		self.materials_containers: Dict[str, Dict[str, Union[int, float]]] = {}
+		
+	
 	
 	def exist_material_container(self, material: str) -> bool:
 		"""
@@ -231,6 +233,11 @@ class AcceptedCoinsDispenser:
 		self.accepted_coins: Dict[str, float] = {}
 	
 	def exist_accepted_coins(self,coin: str) -> bool:
+		"""
+		Checks if a 'coin' is registered at the coins_dispenser
+		:param coin:
+		:return: True if coin is registered otherwise False
+		"""
 		return coin in self.accepted_coins
 	
 	def add_accepted_coins(self, coin: str, value: float) -> bool:
@@ -252,6 +259,11 @@ class AcceptedCoinsDispenser:
 		return True
 
 	def get_accepted_coins_value(self, coin: str) -> float:
+		"""
+		Returns value of a coin if the coin is registered otherwise returns -1
+		:param coin:  # name of the coin
+		:return:  # the value of coin if registered otherwise returns -1
+		"""
 		if self.exist_accepted_coins(coin):
 			value = self.accepted_coins[coin]
 		else:
@@ -265,100 +277,112 @@ class AcceptedCoinsDispenser:
 
 
 class DrinksMenu:
-	# TODO Fully encapsulate DrinksMenu class
+
 	"""
 	=> This class deals with the drink coins_dispenser OFFER that clients can purchase
 	
 	=> attributes:
 		drinks_menu is a dictionary with the following structure:
-		{drink string: {'price': cost of the drink in float, 'command': keystrokes to order string}}
+		{drink string:
+		{'price': cost of the drink in float,
+		'bom': {material name (str): required volume (float), material_name (str): ....}}
+		'command': keystrokes to order string}}
 	
-	=> method:
-		def add_drink(self, drink, price, command):
-	
+	=> methods:
+		def exist_drink(self, drink: str) -> bool:
+		def add_drink(self, drink: str, price: float, bom: Dict[str, int], command: str) -> bool:
+		def get_drink_price(self, drink: str) -> float:
+		def get_drink_bom(self, drink: str) -> Dict[str, int]:
+		def get_drink_command(self, drink: str) -> str:
+		
 	"""
 	
-	def __init__(self):
-		# Initialize Drinks Menu
-		self.drinks_menu = {}
+	def __init__(self) -> None:
+		"""
+		Initializes the drinks drinks_menu with an empty dictionary.
+		"""
+		self.drinks_menu: Dict[str, Dict[str, Union[float, str, Dict[str, int]]]] = {}
 	
-	def add_drink(self, drink, price, command):
+	
+	def exist_drink(self, drink: str) -> bool:
+		"""
+		=> This method checks if a 'drink' figures in the drinks_menu
+
+		:param drink: The name of the drink to check in drinks)drinks_menu
+
+		:return: True if 'drink' exists, False otherwise.
+		"""
+		
+		return drink in self.drinks_menu
+	
+	
+	def add_drink(self, drink: str, price: float, bom: Dict[str, int], command: str) -> bool:
 		"""
 		=> This method adds a new drink to the drinks_menu (a new drink offer for the customer)
 		
-		:param drink:
-		:param price:
-		:param command:
+		:param drink:  # name of the drink
+		:param price: # cost of the drink
+		:param bom:  # ingredients composition of the drink
+		:param command: keystrokes to order the drink
 		:return: True if drink added - False if drink already exists
 		"""
 		
 		# Check if the drink already exists
 		
-		if drink in self.drinks_menu:
+		if self.exist_drink(drink):
 			return False
 		
-		# Add the drink with the specified price
+		# Add the drink with the specified price, bom and command
 		
-		self.drinks_menu[drink] = {'price': price, 'command': command}
+		self.drinks_menu[drink] = {
+			'price': price,
+			'bom': bom,
+			'command': command
+		}
 		return True
+	
+	def get_drink_price(self, drink: str) -> float:
+		"""
+		This method returns the price value (float) of a specified drink.
+		If drink not in drinks_menu returns -1
+		:param drink:
+		:return price:  # Price of the drink or -1 if drink not registered
+		"""
+		
+		if self.exist_drink(drink):
+			price = self.drinks_menu[drink]['price']
+		else:
+			price = -1.
+		return price
+		
+	def get_drink_bom(self, drink: str) -> Dict[str, int]:
+		"""
+		This method returns the bom {ingredient: volume}  of a specified drink.
+		If drink not in drinks_menu returns empty dictionary {}
+		:param drink:
+		:return bom:  # BOM of the drink or {} if drink not registered
+		"""
+		
+		if self.exist_drink(drink):
+			bom = self.drinks_menu[drink]['bom']
+		else:
+			bom = {}
+		return bom
+	
+	def get_drink_command(self, drink: str) -> str:
+		"""
+		This method returns the command keystrokes (string) to launch the order
+		If drink not in drinks_menu returns -1
+		:param drink:
+		:return command:  # commnd of the drink or "#" if drink not registered
+		"""
+		
+		if self.exist_drink(drink):
+			command = self.drinks_menu[drink]['command']
+		else:
+			command = '#'
+		return command
 
-
-# ###################################################################################
-# ## ===vending_machine_simulator=> Drinks BOM - Drink composition
-# ###################################################################################
-
-class DrinksBom:
-	# TODO Fully encapsulate DrinksBom Class
-	"""
-	=> This class manages the making of a particular drink, it relies on:
-	the materials_containers (available ingredients)
-	the drinks_menu : drinks to make
-	
-	=> attributes:
-		bom is a dictionary with following structure
-		{drink name (str): {material name (str): required volume (float), ....}}
-		
-	=> method:
-		
-		def add_drink_bom(self, drink, materials):
-	
-	"""
-	
-	def __init__(self, materials_containers, drinks_menu):
-		self.bom = {}
-		
-		# Pass instances of MaterialsContainersDispenser and DrinksMenu
-		self.materials_containers = materials_containers
-		self.drinks_menu = drinks_menu
-	
-	def get_bom(self):
-		"""
-		=This method is just to grab the bom dictionary
-		:return: bom : the bom dictionary
-		"""
-		return self.bom
-	
-	def add_drink_bom(self, drink, materials):
-		"""
-		=> This method enters the composition (ingredients and volumes) of a drink
-		:param drink:  # must be a registered key of drinks_menu
-		:param materials:
-			# is a dictionary with ingredient as key and required volume as value
-			# {"water": 200, "milk": 150, "coffee": 24}  is an example for latte
-		:return: True if operation ok - False if operation failed
-		"""
-		# Check if the drink exists in the menu
-		if drink not in self.drinks_menu:
-			print(f"{drink} is not available in the drinks menu.")
-			return False
-		
-		# Check if materials are compatible with materials_containers
-		for material in materials:
-			if material not in self.materials_containers:
-				print(f"{material} is not available in the materials containers.")
-				return False
-		self.bom[drink] = materials
-		return True
 
 
 # ###################################################################################
@@ -600,4 +624,4 @@ class DrinksBusinessMaintenance:
 		return materials_volume
 
 
-print(f"\n===vending_machine_simulator=> Class/Methods/Attributes <20240209-v08> @ {date_stamp()}")
+print(f"\n===vending_machine_simulator=> Class/Methods/Attributes <20240210-v09> @ {date_stamp()}")
