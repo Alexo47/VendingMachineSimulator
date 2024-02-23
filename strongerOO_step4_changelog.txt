@@ -1,0 +1,22 @@
+# Major changes in this strongerOO step 4 commit
+
+## Module VendorMachineSimulator
+
+# Classes VendingMachineOperations and VendingMachineMaintenance: Removed
+their associated methods will be adapted to integrate as functions
+into a revised version vending_machine_simulator_app
+
+This "downgrading" is essentially due to the fact that these classes heavily interacts
+ will other classes disrupting the "encapsulation" approach of strongerOO branch.
+
+ Each solution proposed by Thierry Parmentalat (FUN/Mooc) were clunky
+
+# Class VendingMachineFinancials: Created
+This new class is responsible for all related financial revenue and future statistics reporting
+
+
+## Unittest Test Files
+As the class VendingMachineOperations were removed associated test files
+test_vending_machines_operations and test_check_availability were abandoned and not committed
+
+New test_vending_machine_financials was created and execution was successful

@@ -94,7 +94,7 @@ def update_dispenser_container(user_drink):
 	user_drink_bom = BOM[user_drink]
 	"""
 	print(
-		f"\n===update_dispenser_container> BEFORE UPDATE drink: {user_drink}"
+		f"\n===update_dispenser_container> BEFORE UPDATE ordered_drink: {user_drink}"
 		f"coins_dispenser contains: \n{current_dispenser_resource}"
 	)
 	"""
@@ -105,7 +105,7 @@ def update_dispenser_container(user_drink):
 			current_dispenser_resource[res] = 0
 	"""
 	print(
-		f"\n===update_dispenser_container> AFTER UPDATE drink: {user_drink}"
+		f"\n===update_dispenser_container> AFTER UPDATE ordered_drink: {user_drink}"
 		f" coins_dispenser contains: \n{current_dispenser_resource}"
 	)
 	"""
@@ -175,7 +175,7 @@ def checkout_drink(drink):
 
 
 current_dispenser_resource = dispenser_refill_ingredients()
-one_drink = True  # Initially the coins_dispenser is full so there is at least one drink to offer
+one_drink = True  # Initially the coins_dispenser is full so there is at least one ordered_drink to offer
 # print(current_dispenser_resource)
 
 # ###################################################################################
@@ -203,13 +203,13 @@ while one_drink:
 		if current_drink_availability[selected_drink]:
 			payment, change_back = checkout_drink(selected_drink)
 			if payment:
-				print(f"\n Here is your ordered drink <{selected_drink}>")
+				print(f"\n Here is your ordered ordered_drink <{selected_drink}>")
 				print(f"\n Here is your change <{change_back}>")
 				print(f"\n Many thanks for using our services - Till soon!")
 				update_dispenser_container(selected_drink)
 			else:
-				print(f"\n Insufficient payment for your ordered drink <{selected_drink}>")
-				print(f"\n Payed {change_back} but your drink costs {dispenser_prices[selected_drink]}")
+				print(f"\n Insufficient payment for your ordered ordered_drink <{selected_drink}>")
+				print(f"\n Payed {change_back} but your ordered_drink costs {dispenser_prices[selected_drink]}")
 				print(f"\n Here is your payment back - Till soon!")
 		else:
 			print(

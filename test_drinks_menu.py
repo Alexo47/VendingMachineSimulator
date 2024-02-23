@@ -19,53 +19,53 @@ class TestDrinksMenu(unittest.TestCase):
         self.assertTrue(self.drinks_menu.add_drink(drink1, price1, bom1, command1))
         self.assertTrue(self.drinks_menu.exist_drink(drink1))
         
-    # Test case for adding a new drink
+    # Test case for adding a new ordered_drink
     def test_add_drink(self):
-        # Test adding a new drink
+        # Test adding a new ordered_drink
         self.assertFalse(self.drinks_menu.exist_drink(drink1))
         self.assertTrue(self.drinks_menu.add_drink(drink1, price1, bom1, command1))
 
-        # Test adding an existing drink
+        # Test adding an existing ordered_drink
         self.assertFalse(self.drinks_menu.add_drink(drink1, price1, bom1, command1))
 
-    # Test case for getting the price of a drink
+    # Test case for getting the price of a ordered_drink
     def test_get_drink_price(self):
-        # No drink in the menu
+        # No ordered_drink in the menu
         self.assertFalse(self.drinks_menu.exist_drink(drink1))  # drinks_menu is empty
-        # Add a drink to the drinks_menu
+        # Add a ordered_drink to the drinks_menu
         self.drinks_menu.add_drink(drink1, price1, bom1, command1)
 
-        # Test getting the price of an existing drink
+        # Test getting the price of an existing ordered_drink
         self.assertEqual(self.drinks_menu.get_drink_price(drink1), price1)
 
-        # Test getting the price of a non-existing drink
+        # Test getting the price of a non-existing ordered_drink
         self.assertEqual(self.drinks_menu.get_drink_price(drink2), -1)
 
-    # Test case for getting the BOM of a drink
+    # Test case for getting the BOM of a ordered_drink
     def test_get_drink_bom(self):
-        # No drink in the menu
+        # No ordered_drink in the menu
         self.assertFalse(self.drinks_menu.exist_drink(drink1))  # drinks_menu is empty
-        # Add a drink to the drinks_menu
+        # Add a ordered_drink to the drinks_menu
         self.drinks_menu.add_drink(drink1, price1, bom1, command1)
 
-        # Test getting the BOM of an existing drink
+        # Test getting the BOM of an existing ordered_drink
         self.assertDictEqual(self.drinks_menu.get_drink_bom(drink1), bom1)
 
-        # Test getting the BOM of a non-existing drink
+        # Test getting the BOM of a non-existing ordered_drink
         self.assertDictEqual(self.drinks_menu.get_drink_bom(drink2), {})
 
-    # Test case for getting the command of a drink
+    # Test case for getting the command of a ordered_drink
     def test_get_drink_command(self):
-        # No drink in the menu
+        # No ordered_drink in the menu
         self.assertFalse(self.drinks_menu.exist_drink(drink1))  # drinks_menu is empty
 
-        # Add a drink to the drinks_menu
+        # Add a ordered_drink to the drinks_menu
         self.drinks_menu.add_drink(drink1, price1, bom1, command1)
 
-        # Test getting the command of an existing drink
+        # Test getting the command of an existing ordered_drink
         self.assertEqual(self.drinks_menu.get_drink_command(drink1), command1)
 
-        # Test getting the command of a non-existing drink
+        # Test getting the command of a non-existing ordered_drink
         self.assertEqual(self.drinks_menu.get_drink_command(drink2), '#')
 
 

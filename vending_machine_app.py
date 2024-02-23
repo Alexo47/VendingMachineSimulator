@@ -20,7 +20,7 @@ from vending_machine_simulator import MaterialsContainersDispenser
 from vending_machine_simulator import AcceptedCoinsDispenser
 from vending_machine_simulator import DrinksMenu
 from vending_machine_simulator import DrinksBom
-from vending_machine_simulator import DrinksBusinessOperations
+from vending_machine_simulator import VendingMachineOperations
 from vending_machine_simulator import DrinksBusinessMaintenance
 import time
 import os
@@ -39,7 +39,7 @@ ITD2_ACCEPTED_COINS = {'Penny': 0.01, 'Nickel': 0.05, 'Dime': 0.10, 'Quarter': 0
 ITD2_ADMIN_COMMANDS = {
 	'/?': 'print container operations',
 	'/r': 'containers refill',
-	'/s': 'shut down drink dispenser'
+	'/s': 'shut down ordered_drink dispenser'
 }
 
 ERROR_CODES = {
@@ -47,10 +47,244 @@ ERROR_CODES = {
 	"material_container_refill_failure": 10,
 	"operations_status not recognizable - program failure": 90,
 	"admin_commands inconsistency - addition failed": 91,
-	"make drink failed - unable to update materials_dispenser volumes": 92
+	"make ordered_drink failed - unable to update materials_dispenser volumes": 92
 }
 
+# ###################################################################################
+# ## ===u100d_coffee-machine=> Vending Machine Operations Local Routines
+# ###################################################################################
+"""
+	This "section'" manages customer orders, payment checkout, making the drink takeout ingredients
+	
+	attributes:
+	
+	methods:
+		def check_drink_availability(self, drink):
+		def ask_user_drink(self):
+		def drink_checkout(self, ordered_drink):
+		def make_drink(self, ordered_drink):
+		
+	external methods activated:
+		drinks_menu.exist_drink
+		drinks_menu.get_drink_price
+		drinks_menu.get_drink_bom
+		materials_dispenser.exist_material_container
+		materials_dispenser.get_volume_material_container
+		accepted_coins.get_all_coins
+		accepted_coins.get_coin_value
 
+"""
+
+def check_drink_availability(ordered_drink: str) -> bool:
+	"""
+	Checks if all ingredients are available to make the ordered_drink
+	:param ordered_drink:
+	:return: True if the ordered_drink can be made False otherwise
+
+	external methods activated:
+		drinks_menu.exist_drink
+		drinks_menu.get_drink_bom
+		materials_dispenser.exist_material_container
+		materials_dispenser.get_volume_material_container
+
+	"""
+	count_ok = 0
+	
+	if drinks_menu.exist_drink(ordered_drink):
+		drink_bom = drinks_menu.get_drink_bom(ordered_drink)
+		for ingr in drink_bom:
+			vol_required = drink_bom[ingr]
+			if self.materials_dispenser.exist_material_container(ingr):
+				# The ingredient has a container in the dispenser - check volume
+				
+				vol_available = self.materials_dispenser.get_volume_material_container(ingr)
+				if vol_available >= vol_required:
+					count_ok += 1
+		
+		if count_ok == len(drink_bom):
+			return True
+	return False
+
+
+def ask_user_drink(self):
+	"""
+	Scans the Drinks Menu - If drink can be made displays menu choice: price & command
+	:return:
+
+	external methods activated:
+		drinks_menu.get_all_drinks
+		drinks_menu.exist_drink
+		drinks_menu.get_drink_price
+		drinks_menu.get_drink_command
+		materials_dispenser.exist_material_container
+		materials_dispenser.get_volume_material_container
+	"""
+	
+	drinks_in_menu = self.drinks_menu.get_all_drinks()
+	for drink in drinks_in_menu:
+		if self.check_drink_availability(drink):
+			drink_price = self.drinks_menu.get_drink_price(drink)
+			drink_command = self.drinks_menu.get_drink_command(drink)
+			print(
+				f"Want {drink} for {drink_price} US$?"
+				f"then type: {drink_command}"
+			)
+	user_choice = input("So what is your choice? =?> ")
+	print(f"\n===vending_machine_simulator=> You ordered {user_choice}")
+	for drink in drinks_in_menu:
+		drink_command = self.drinks_menu.get_drink_command(drink)
+		if user_choice == drink_command:
+			return drink
+	# user choice unrecognizable
+	drink = '#'
+	return drink
+
+
+def drink_checkout(self, ordered_drink):
+	"""
+
+	:param ordered_drink:
+	:return:
+
+	external methods activated:
+		drinks_menu.get_drink_price
+		accepted_coins.get_all_coins
+		accepted_coins.get_coin_value
+
+	"""
+	
+	drink_price = self.drinks_menu.get_drink_price(ordered_drink)
+	current_payment = 0
+	coins_accepted = self.accepted_coins.get_all_coins()
+	for coin in coins_accepted:
+		number_coins = int(input(f" <{coin}> : How many?"))
+		coin_value = self.accepted_coins.get_coin_value(coin)
+		current_payment += coin_value * number_coins
+		if drink_price <= current_payment:
+			change = current_payment - drink_price
+			print(f" You are all set for your <{ordered_drink}> and your change is <{change}>")
+			return True
+	
+	# at this level the user introduced an insufficient amount to pay for his ordered_drink
+	change = current_payment
+	print(
+		f" {current_payment} is insufficient for your"
+		f"<{ordered_drink}> that costs: <{drink_price}"
+		f" Here is your change: {change}"
+	)
+	return False
+
+
+def make_drink(self, ordered_drink):
+	"""
+	Drink consumption requires ingredients, this method reduces volume accordingly to drink_bom
+	:param ordered_drink:
+	:return:
+
+	external methods activated:
+		drinks_menu.exist_drink
+		drinks_menu.get_drink_price
+		drinks_menu.get_drink_bom
+		materials_dispenser.exist_material_container
+		materials_dispenser.takeout_material_container
+	"""
+	if self.drinks_menu.exist_drink(ordered_drink):
+		drink_bom = self.drinks_menu.get_drink_bom(ordered_drink)
+		for ingr in drink_bom:
+			vol_required = drink_bom[ingr]
+			if self.materials_dispenser.exist_material_container(ingr):
+				# The ingredient has a container in the dispenser - check volume
+				new_volume = self.materials_dispenser.takeout_material_container(
+					ingr, vol_required
+				)
+				if new_volume < 0:  # program error make_drink should not have been activated
+					return False
+		return True
+	return False
+
+
+# ###################################################################################
+# ## ===vending_machine_simulator=> Drinks Business Maintenance Local Routines
+# ###################################################################################
+
+
+class DrinksBusinessMaintenance:
+	# TODO Fully encapsulate DrinksBusinessMaintenance Class
+	"""
+	=> This class manages all maintenance operations
+	it uses materials_dispenser from MaterialsContainersDispensers
+
+	=> attributes:
+		admin_maintenance_commands is a dictionary with the following structure
+			{keystrokes (string): command message (string)}
+
+	=> methods:
+		def add_admin_command(self, control_command):
+		def report_containers_levels(self):
+		def refill_all_containers(self):
+
+	"""
+	
+	def __init__(
+			self,
+			materials_dispenser
+	):
+		self.admin_maintenance_commands = {}
+		self.materials_dispenser = materials_dispenser
+		self.materials_dispenser.materials_containers = materials_dispenser.materials_containers
+	
+	def add_admin_command(self, control_command):
+		"""
+
+		:param control_command:
+		:return:
+		"""
+		control_command_keystroke, control_command_message = list(control_command.items())[0]
+		# print(
+		# 	f"\n===DrinksBusinessMaintenance/add_admin_command=> @ {date_stamp()}"
+		# 	f"\n parameter control_command: <{control_command}>"
+		# 	f"\n variable control_command_keystroke: <{control_command_keystroke} ")
+		
+		for command in self.admin_maintenance_commands:
+			if command == control_command_keystroke:
+				print(
+					f"\n===DrinksBusinessMaintenance/add_admin_command=> {date_stamp()}"
+					f"{control_command_keystroke} already configured in the ContainerDispenser"
+				)
+				return False
+		self.admin_maintenance_commands[control_command_keystroke] = control_command_message
+		return True
+	
+	def report_containers_levels(self):
+		"""
+
+		:return:
+		"""
+		time_stamp = date_stamp()
+		print(
+			f"At this point of time: {time_stamp}"
+			f"The Containers are in the following status:"
+		)
+		for material in self.materials_dispenser:
+			material_capacity = self.materials_dispenser[material]['capacity']
+			material_volume = self.materials_dispenser[material]['volume']
+			# material = materials_available.key()
+			# filled = materials_available.value()
+			print(
+				f" Container of: <{material}> with total capacity of {material_capacity}"
+				f" is currently filled at {material_volume} level"
+			)
+	
+	def refill_all_containers(self):
+		"""
+
+		:return:
+		"""
+		materials_volume = {}
+		for material in self.materials_dispenser.materials_containers:
+			volume = self.materials_dispenser.refill_material_container(material)
+			materials_volume[material] = volume
+		return materials_volume
 
 
 # ###################################################################################
@@ -167,7 +401,7 @@ for drink in ITD2_DRINKS_BOM:
 
 itd2_accumulated_revenue = 0
 
-itd2_drink_dispenser_business = DrinksBusinessOperations(
+itd2_drink_dispenser_business = VendingMachineOperations(
 	itd2_materials_dispenser,
 	itd2_drinks_bom,
 	itd2_drinks_menu,
@@ -249,7 +483,7 @@ for material in itd2_materials_dispenser.materials_containers:
 
 itd2_drink_dispenser_business.reset_revenue()
 
-# Initially the dispenser is full so there is at least one drink to offer
+# Initially the dispenser is full so there is at least one ordered_drink to offer
 one_drink = True
 operations = 'running'
 
@@ -272,7 +506,7 @@ while operations != 'shutdown':
 	
 	for drink in itd2_drinks_menu.drinks_menu:
 
-		drink_flag = itd2_drink_dispenser_business.check_availability(
+		drink_flag = itd2_drink_dispenser_business.check_drink_availability(
 			drink
 		)
 		if drink_flag:
@@ -324,14 +558,14 @@ while operations != 'shutdown':
 					if payment:
 						print(
 							f"\n===u100d_coffee-machine/checkout-order SUCCESSFUL"
-							f"\n Here is your ordered drink <{selected_drink}>"
+							f"\n Here is your ordered ordered_drink <{selected_drink}>"
 							f"\n Here is your change: {change_back}"
 							f" Enjoy your {drink} - Thanks for using our services - Till soon"
 						)
 					# ########## Process Coffee Making ##########
 						if not itd2_drink_dispenser_business.make_drink(drink):
 							error_message = (
-								f"make drink failed - unable to update materials_dispenser volumes"
+								f"make ordered_drink failed - unable to update materials_dispenser volumes"
 							)
 							error_code = ERROR_CODES[error_message]
 							print(
@@ -347,8 +581,8 @@ while operations != 'shutdown':
 					else:
 						print(
 							f"\n===u100d_coffee-machine/checkout-order UNSUCCESSFUL"
-							f"\n Insufficient payment for your ordered drink <{selected_drink}>"
-							f"\n Payed {change_back} but your drink costs {drink_price}"
+							f"\n Insufficient payment for your ordered ordered_drink <{selected_drink}>"
+							f"\n Payed {change_back} but your ordered_drink costs {drink_price}"
 							f"\n Here is your refund: {change_back} - Till soon!"
 						)
 				else:
@@ -405,7 +639,7 @@ while operations != 'shutdown':
 						error_code = ERROR_CODES[error_message]
 						sys.exit(error_code)
 			else:
-				# admin_choice = '/s' - Admin wants to shut down the drink dispenser
+				# admin_choice = '/s' - Admin wants to shut down the ordered_drink dispenser
 				operations = 'shutdown'
 				
 		else:

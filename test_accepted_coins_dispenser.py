@@ -26,10 +26,10 @@ class TestAcceptedCoinsDispenser(unittest.TestCase):
         self.assertFalse(self.coins_dispenser.add_accepted_coins(coin2, coin2_value))
 
     def test_get_accepted_coins_value(self):
-        # Test case for get_accepted_coins_value method
-        self.assertTrue(self.coins_dispenser.get_accepted_coins_value(coin1), invalid_value)
+        # Test case for get_coin_value method
+        self.assertTrue(self.coins_dispenser.get_coin_value(coin1), invalid_value)
         self.assertTrue(self.coins_dispenser.add_accepted_coins(coin1, coin1_value))
-        self.assertAlmostEqual(self.coins_dispenser.get_accepted_coins_value(coin1), coin1_value)
+        self.assertAlmostEqual(self.coins_dispenser.get_coin_value(coin1), coin1_value)
 
 if __name__ == '__main__':
     unittest.main()
