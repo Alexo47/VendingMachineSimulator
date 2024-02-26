@@ -89,6 +89,7 @@ class MaterialsContainersDispenser:
 	methods:
 		def exist_material_container(self, material):
 		def allocate_material_container(self, material, capacity)
+		def get_all_materials(self) -> list:
 		def get_capacity_material_container(self, material):
 		def get_volume_material_container(self, material):
 		def refill_material_container(self, material):
@@ -137,6 +138,16 @@ class MaterialsContainersDispenser:
 		# Add the material with the specified maximum quantity
 		self.materials_containers[material] = {'capacity': capacity, 'volume': 0}
 		return True
+	
+	def get_all_materials(self) -> list:
+		"""
+		Methods returns all the materials names (str) in a list structure
+		:return: list of available materials
+		"""
+		material_list = []
+		for material in self.materials_containers:
+			material_list.append(material)
+		return material_list
 	
 	def get_capacity_material_container(self, material: str) -> int:
 		"""
