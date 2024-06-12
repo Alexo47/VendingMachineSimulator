@@ -1,14 +1,89 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Welcome to the Vending Machine</h1>
-    <ul>
-        {% for drink in drinks %}
-            <li>
-                <a href="{{ url_for('order', drink=drink) }}">{{ drink }} - ${{ menu[drink]['price'] }}</a>
-            </li>
-        {% else %}
-            <li>No drinks available at the moment. Please try again later.</li>
-        {% endfor %}
-    </ul>
+    <div class="container">
+        <div class="vending-panel">
+            <img src="{{ url_for('static', filename='images/coffee-drinks-dispenser_v2.jpg') }}" alt="drinks dispenser">
+        </div>
+        <div class="button-column">
+            {% for drink, details in menu.items() %}
+                <button class="drink-button" onclick="orderDrink('{{ drink }}')">
+                    <div class="drink-button-content">
+                        <img class="drink-icon" src="{{ url_for('static', filename='images/icon-' + drink + '.png') }}" alt="{{ drink }}">
+                        <span class="button-text">&nbsp{{ drink.capitalize() }}</span>
+                    </div>
+                </button>
+            {% endfor %}
+        </div>
+        <div class="coin-dispenser">
+            <div class="led-display" id="ledDisplay">Welcome to ITD2 Drinks Dispenser</div>
+            <img src="{{ url_for('static', filename='images/coin-dispenser_variant-horizontal-v1.jpg') }}" alt="coin dispenser">
+            <div class="coin-buttons">
+                {% for coin, value in coin_values.items() %}
+                    <button class="coin-button" data-coinValue="{{ value }}">
+                        <img src="{{ url_for('static', filename='images/uscoin-' + coin.lower() + '.png') }}" alt="{{ coin }}">
+                        <span class="coin-text">{{ value }}c</span>
+                    </button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const drinkAvailability = {{ drink_availability | tojson }};
+        const coinButtons = document.querySelectorAll('.coin-button');
+        const drinkButtons = document.querySelectorAll('.drink-button');
+        const ledDisplay = document.getElementById('ledDisplay');
+
+        document.addEventListener('DOMContentLoaded', function () {
+            Object.keys(drinkAvailability).forEach(drink => {
+                const button = document.querySelector(`.drink-button[onclick*="${drink}"]`);
+                if (!drinkAvailability[drink]) {
+                    button.classList.add('unavailable');
+                }
+            });
+
+            coinButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const coinValue = this.dataset.coinvalue;
+                    ledDisplay.textContent = `You inserted $${coinValue}`;
+
+                    this.classList.add('flashing');
+                    setTimeout(() => {
+                        this.classList.remove('flashing');
+                    }, 1000);
+                });
+            });
+
+            drinkButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const drink = this.querySelector('.button-text').textContent.trim();
+                    if (drinkAvailability[drink.toLowerCase()]) {
+                        ledDisplay.textContent = `You have selected ${drink}`;
+                    } else {
+                        ledDisplay.textContent = `${drink} is not available at the moment.`;
+                    }
+
+                    this.classList.add('flashing');
+                    setTimeout(() => {
+                        this.classList.remove('flashing');
+                    }, 1000);
+                });
+            });
+        });
+
+        function orderDrink(drink) {
+            const button = document.querySelector(`.drink-button[onclick*="${drink}"]`);
+            if (drinkAvailability[drink]) {
+                ledDisplay.textContent = `You have selected ${drink}`;
+            } else {
+                ledDisplay.textContent = `${drink} is not available at the moment.`;
+            }
+
+            button.classList.add('flashing');
+            setTimeout(() => {
+                button.classList.remove('flashing');
+            }, 1000);
+        }
+    </script>
 {% endblock %}

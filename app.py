@@ -16,8 +16,12 @@ vending_machine = VendingMachine(materials_capacity, coin_values, menu)
 
 @app.route('/')
 def index():
-    available_drinks = [drink for drink in vending_machine.menu.get_drinks() if vending_machine.check_availability(drink)]
-    return render_template('index.html', drinks=available_drinks, menu=menu)
+    available_drinks = [drink for drink in vending_machine.menu.get_drinks() if
+                        vending_machine.check_availability(drink)]
+    drink_availability = {drink: vending_machine.check_availability(drink) for drink in
+                          vending_machine.menu.get_drinks()}
+    return render_template('index.html', drinks=available_drinks, menu=menu,
+                           coin_values=coin_values, drink_availability=drink_availability)
 
 def safe_int(value, default=0):
     try:
