@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Welcome to the Vending Machine</h1>
+    <ul>
+        {% for drink in drinks %}
+            <li>
+                <a href="{{ url_for('order', drink=drink) }}">{{ drink }} - ${{ menu[drink]['price'] }}</a>
+            </li>
+        {% else %}
+            <li>No drinks available at the moment. Please try again later.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

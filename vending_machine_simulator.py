@@ -89,7 +89,6 @@ class MaterialsContainersDispenser:
 	methods:
 		def exist_material_container(self, material):
 		def allocate_material_container(self, material, capacity)
-		def get_all_materials(self) -> list:
 		def get_capacity_material_container(self, material):
 		def get_volume_material_container(self, material):
 		def refill_material_container(self, material):

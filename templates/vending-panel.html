@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ITD2 - Vending Machine Showcase</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet"
+      integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
+
+  <style>
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center; /* Align items at the center */
+      min-height: 100vh;
+    }
+
+    .vending-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Center horizontally */
+      justify-content: center; /* Center vertically */
+    }
+
+    .vending-panel img {
+      width: 150px; /* Fixed width to ensure dominance */
+      height: auto;
+    }
+
+
+    .button-column {
+      display: flex;
+      flex-direction: column;
+      gap: 10px; /* Add gap between buttons */
+      align-items: center; /* Align buttons horizontally */
+      margin-right: 30px; /* Add margin to the right side */
+    }
+
+    .button-text {
+      font-size: 0.75rem; /* We can keep the font size style here */
+    }
+
+
+    .drink-icon {
+      font-size: 3rem;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .drink-button {
+      text-align: center;
+      width: 80px; /* Smaller width */
+      margin: 0px;
+      border: none;
+      background: none;
+      padding: 0px;
+      border-radius: 50%;
+      transition: background-color 0.3s, border-color 0.3s;
+      display: flex; /* We already have display: flex; */
+      flex-direction: column; /* We already have flex-direction: column; */
+      justify-content: center; /* Center items vertically within the button */
+    }
+
+    .drink-button img {
+      width: 36px;
+      height: auto;
+      border-radius: 50%;
+      padding: 10px;
+      background-color: lightgreen;
+      border: 2px solid green;
+    }
+
+
+    .drink-button.unavailable img {
+      background-color: grey;
+      border-color: grey;
+    }
+
+
+    /* New class for the content wrapper */
+    .drink-button-content {
+      display: flex; /* Make the content a flex container */
+      justify-content: space-between; /* Align items horizontally within the content */
+      align-items: center; /* Vertically align content in the center */
+    }
+
+    .coin-dispenser {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .led-display {
+      width: 240px;
+      height: 40px;
+      background-color: black;
+      color: lime;
+      text-align: center;
+      line-height: 40px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.75rem;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      border: 2px solid #555;
+    }
+
+    .coin-dispenser img {
+      width: 100px; /* Adjust image width */
+      height: auto;
+    }
+
+    .coin-buttons {
+      display: flex;
+      flex-direction: row; /* Align buttons horizontally */
+      gap: 10px; /* Add gap between buttons */
+      justify-content: center; /* Center buttons horizontally */
+      margin-top: 10px; /* Add margin top for spacing */
+    }
+
+    .coin-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px; /* Add gap between image and text */
+      border-radius: 50%; /* Make the button round */
+      border: 1px solid lightgray; /* Add a thin lightgray outline */
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .coin-button img {
+      width: 30px; /* Adjust image width */
+      height: auto;
+    }
+
+    .coin-text {
+      font-size: 0.75rem;
+    }
+
+
+    @keyframes flash {
+      0% { background-color: yellow; }
+      50% { background-color: red; }
+      100% { background-color: yellow; }
+    }
+
+    .flashing {
+      animation: flash 0.5s linear 2;
+    }
+
+  </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="vending-panel">
+         <img src="../images/coffee-drinks-dispenser_v2.jpg" alt="drinks dispenser">
+        </div>
+        <div class="button-column">
+            <button class="drink-button" onclick="orderDrink('expresso')">
+              <div class="drink-button-content">    <img class="drink-icon" src="../images/icon-expresso.png" alt="expresso">
+                <span class="button-text">&nbspExpresso</span>
+              </div>
+            </button>
+            <button class="drink-button" onclick="orderDrink('latte')">
+              <div class="drink-button-content">  <img class="drink-icon" src="../images/icon-caffe-latte.png" alt="latte">
+                <span class="button-text">&nbspLatte</span>
+                </div>
+            </button>
+            <button class="drink-button" onclick="orderDrink('cappuccino')">
+              <div class="drink-button-content">  <img class="drink-icon" src="../images/icon-cappucino.png" alt="cappuccino">
+                <span class="button-text">&nbspCappuccino</span>
+              <div>
+            </button>
+        </div>
+       <div class="coin-dispenser">
+          <div class="led-display" id="ledDisplay">Welcome to ITD2 Drinks Dispenser</div>
+          <img src="../images/coin-dispenser_variant-horizontal-v1.jpg" alt="coin dispenser">
+          <div class="coin-buttons">
+            <button class="coin-button" data-coinValue="0.01">
+              <img src="../images/uscoin_1cent_v1.png" alt="1 cent">
+              <span class="coin-text">1c</span>
+            </button>
+            <button class="coin-button" data-coinValue="0.05">
+              <img src="../images/uscoin_5cent_v1.png" alt="5 cents">
+              <span class="coin-text">5c</span>
+            </button>
+            <button class="coin-button" data-coinValue="0.10">
+              <img src="../images/uscoin_10cent_v1.png" alt="10 cents">
+              <span class="coin-text">10c</span>
+            </button>
+            <button class="coin-button" data-coinValue="0.25">
+              <img src="../images/uscoin_25cent_v1.png" alt="25 cents">
+              <span class="coin-text">25c</span>
+            </button>
+          </div>
+        </div>
+      </div>
+  
+  <script>
+    const drinkAvailability = {
+        expresso: true,
+        latte: false,
+        cappuccino: true
+    };
+
+    const coinButtons = document.querySelectorAll('.coin-button');
+    const drinkButtons = document.querySelectorAll('.drink-button');
+    const ledDisplay = document.getElementById('ledDisplay');
+
+    document.addEventListener('DOMContentLoaded', function () {
+        Object.keys(drinkAvailability).forEach(drink => {
+            const button = document.querySelector(`.drink-button[onclick*="${drink}"]`);
+            if (!drinkAvailability[drink]) {
+                button.classList.add('unavailable');
+            }
+        });
+
+        // Add event listeners to coin buttons
+        coinButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const coinValue = this.dataset.coinvalue;
+                ledDisplay.textContent = `You inserted $${coinValue}`;
+
+                // Add flashing effect
+                this.classList.add('flashing');
+                setTimeout(() => {
+                    this.classList.remove('flashing');
+                }, 1000); // Remove the flashing class after the animation
+            });
+        });
+
+        // Add event listeners to drink buttons
+        drinkButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const drink = this.querySelector('.button-text').textContent.trim();
+                if (drinkAvailability[drink.toLowerCase()]) {
+                    ledDisplay.textContent = `You have selected ${drink}`;
+                } else {
+                    ledDisplay.textContent = `${drink} is not available at the moment.`;
+                }
+
+                // Add flashing effect
+                this.classList.add('flashing');
+                setTimeout(() => {
+                    this.classList.remove('flashing');
+                }, 1000); // Remove the flashing class after the animation
+            });
+        });
+    });
+
+    function orderDrink(drink) {
+        const button = document.querySelector(`.drink-button[onclick*="${drink}"]`);
+        if (drinkAvailability[drink]) {
+            ledDisplay.textContent = `You have selected ${drink}`;
+        } else {
+            ledDisplay.textContent = `${drink} is not available at the moment.`;
+        }
+
+        // Add flashing effect
+        button.classList.add('flashing');
+        setTimeout(() => {
+            button.classList.remove('flashing');
+        }, 1000); // Remove the flashing class after the animation
+    }
+</script>
+
+</body>
+
+</html>
