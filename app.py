@@ -1,18 +1,26 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+import logging
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask_debugtoolbar import DebugToolbarExtension
 from vending_machine.vending_machine import VendingMachine
 
+# Assuming vending_machine_data.py is a Python file
+from vending_machine.vending_machine_data import (
+    materials_capacity,
+    coin_values,
+    menu,
+    drink_price,
+)
+
 app = Flask(__name__)
+app.config['DEBUG'] = True  # Set debug mode to True
 app.secret_key = 'your_secret_key'
+toolbar = DebugToolbarExtension(app)
 
-materials_capacity = {"water": 1000, "milk": 300, "coffee": 60}
-coin_values = {'Penny': 0.01, 'Nickel': 0.05, 'Dime': 0.10, 'Quarter': 0.25}
-menu = {
-    'expresso': {'price': 1.5, 'bom': {"water": 50, "milk": 0, "coffee": 18}, 'command': '/e'},
-    'latte': {'price': 2.5, 'bom': {"water": 200, "milk": 150, "coffee": 24}, 'command': '/l'},
-    'cappuccino': {'price': 3.0, 'bom': {"water": 250, "milk": 100, "coffee": 24}, 'command': '/c'}
-}
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
-vending_machine = VendingMachine(materials_capacity, coin_values, menu)
+vending_machine = VendingMachine(materials_capacity, coin_values, menu, drink_price)
 
 @app.route('/')
 def index():
@@ -20,8 +28,17 @@ def index():
                         vending_machine.check_availability(drink)]
     drink_availability = {drink: vending_machine.check_availability(drink) for drink in
                           vending_machine.menu.get_drinks()}
-    return render_template('index.html', drinks=available_drinks, menu=menu,
-                           coin_values=coin_values, drink_availability=drink_availability)
+    # Log the menu
+    logger.debug("Menu: %s", menu)
+    logger.debug("Drink Prices: %s", drink_price)
+    return render_template(
+        'index.html',
+        drinks=available_drinks,
+        menu=menu,
+        drink_price=drink_price,
+        coin_values=coin_values,
+        drink_availability=drink_availability
+    )
 
 def safe_int(value, default=0):
     try:
@@ -29,18 +46,24 @@ def safe_int(value, default=0):
     except (ValueError, TypeError):
         return default
 
-@app.route('/order/<drink>', methods=['GET', 'POST'])
+@app.route('/order/<drink>', methods=['POST'])
 def order(drink):
-    if request.method == 'POST':
-        payment = {coin: safe_int(request.form.get(coin)) for coin in coin_values}
-        change = vending_machine.process_payment(drink, payment)
-        if change is not None:
-            vending_machine.make_drink(drink)
-            flash(f'Drink {drink} made successfully. Change: ${change:.2f}', 'success')
+    data = request.get_json()  # Assuming the request is JSON formatted
+    payment = data.get('payment', 0)  # Extract payment from JSON data
+    if drink in drink_price:
+        price = drink_price[drink]
+        if payment >= price:
+            # Check if ingredients are available
+            if vending_machine.check_availability(drink):
+                change = payment - price
+                vending_machine.make_drink(drink)
+                return jsonify({'status': 'success', 'change': change, 'message': f'Drink {drink} made successfully. Change: ${change:.2f}'}), 200
+            else:
+                return jsonify({'status': 'error', 'message': 'Insufficient ingredients to make this drink.'}), 400
         else:
-            flash('Insufficient payment. Please try again.', 'danger')
-        return redirect(url_for('index'))
-    return render_template('order.html', drink=drink, price=menu[drink]['price'], coins=coin_values)
+            return jsonify({'status': 'error', 'message': 'Insufficient payment. Please try again.'}), 400
+    else:
+        return jsonify({'status': 'error', 'message': 'Drink not found.'}), 404
 
 @app.route('/admin/refill')
 def refill():

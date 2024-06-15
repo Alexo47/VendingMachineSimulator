@@ -3,18 +3,58 @@
 {% block content %}
     <div class="container">
         <h1>Order {{ drink }}</h1>
-        <form method="post">
+        <form id="orderForm" method="post">
+            <input type="hidden" name="price" id="drinkPrice" value="{{ price }}">
             <p>Price: ${{ price }}</p>
             <p>Insert coins:</p>
             <ul>
                 {% for coin, value in coin_values.items() %}
                     <li>
                         <label>{{ coin }}</label>
-                        <input type="number" name="{{ coin }}" value="0" min="0">
+                        <input type="number" name="{{ coin }}" class="coin-input" value="0" min="0">
                     </li>
                 {% endfor %}
             </ul>
             <button type="submit">Submit</button>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const orderForm = document.getElementById('orderForm');
+            const drinkPrice = parseFloat(document.getElementById('drinkPrice').value);
+
+            // Log the drinkPrice value
+            console.log('Drink price from hidden input:', drinkPrice);
+
+            orderForm.addEventListener('submit', function (event) {
+                event.preventDefault(); // Prevent form submission
+
+                let totalPaid = 0;
+                const coinInputs = document.querySelectorAll('.coin-input');
+                coinInputs.forEach(input => {
+                    totalPaid += parseFloat(input.value) * parseFloat(input.dataset.value);
+                });
+
+                // Log totalPaid
+                console.log('Total amount paid:', totalPaid);
+
+                // Optionally, you can use fetch() or AJAX to send payment data to Flask
+                // Here's a basic example using fetch:
+                fetch('/order/{{ drink }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ payment: totalPaid }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data); // Log response from Flask (e.g., success or error message)
+                    // Optionally, update UI based on response (e.g., display success message)
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    </script>
 {% endblock %}

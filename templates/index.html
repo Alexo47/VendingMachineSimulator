@@ -1,13 +1,108 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="container">
+
+<script>
+    let selectedDrink = null;
+    let drinkPrice = 0;
+    let amountPaid = 0;
+
+    function orderDrink(button, drink) {
+        console.log('===orderDrink=> Invoking orderDrink');
+        drinkPrice = parseFloat(button.dataset.drinkPrice);  // Update the global drinkPrice variable
+        console.log('===orderDrink=>Drink price:', drinkPrice);
+        if (isNaN(drinkPrice)) {
+            console.error("Drink price not found or invalid for:", drink);
+            return;
+        }
+
+        selectedDrink = drink;
+        console.log('===orderDrink=>Selected drink:', selectedDrink);
+        amountPaid = 0;
+        displayMessage(`You have selected ${drink.charAt(0).toUpperCase() + drink.slice(1)}`);
+        setTimeout(() => {
+            updateDisplay();
+        }, 2000);
+    }
+
+    function displayMessage(message) {
+        const ledDisplay = document.getElementById('ledDisplay');
+        ledDisplay.textContent = message;
+    }
+
+    function updateDisplay() {
+        if (selectedDrink) {
+            displayMessage(`${selectedDrink.charAt(0).toUpperCase() + selectedDrink.slice(1)}/${drinkPrice.toFixed(2)} <= ${amountPaid.toFixed(2)}`);
+            console.log('===updateDisplay=> Updated display:');
+            console.log('===updateDisplay=> Selected drink:', selectedDrink);
+            console.log('===updateDisplay=> Drink price:', drinkPrice);
+            console.log('===updateDisplay=> Amount paid:', amountPaid);
+        }
+    }
+
+    // Event Listener Setup
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.coin-button').forEach(button => {
+            button.addEventListener('click', () => {
+                if (selectedDrink) {
+                    const coinValue = parseFloat(button.dataset.coinvalue);
+                    amountPaid += coinValue;
+                    updateDisplay();
+                } else {
+                    displayMessage('Please select a drink first.');
+                    setTimeout(() => {
+                        displayMessage('Welcome to ITD2 Drinks Dispenser');
+                    }, 2000);
+                }
+            });
+        });
+    });
+
+    function playSound(soundFile) {
+        const audio = new Audio(soundFile);
+        audio.play();
+    }
+
+    function processOrder() {
+        if (selectedDrink) {
+            if (amountPaid >= drinkPrice) {
+                const change = (amountPaid - drinkPrice).toFixed(2);
+                displayMessage(`${selectedDrink.charAt(0).toUpperCase() + selectedDrink.slice(1)} Making - Change: $${change}`);
+
+                // Play coffee grinding sound (use an actual sound file)
+                playSound('path/to/coffee-grinding-sound.mp3');
+
+                setTimeout(() => {
+                    displayMessage(`${selectedDrink.charAt(0).toUpperCase() + selectedDrink.slice(1)} ready: Enjoy!`);
+
+                    setTimeout(() => {
+                        displayMessage('Welcome to ITD2 Drinks Dispenser');
+                        selectedDrink = null;
+                        amountPaid = 0;
+                        drinkPrice = 0;
+                    }, 5000); // Adjust time as needed for how long the "Enjoy" message should be displayed
+
+                }, 3000); // Adjust time as needed for the coffee making process
+            } else {
+                displayMessage('Insufficient funds. Please add more coins.');
+            }
+        } else {
+            displayMessage('Please select a drink first.');
+        }
+    }
+</script>
+
+
+
+
+ <div class="container">
         <div class="vending-panel">
             <img src="{{ url_for('static', filename='images/coffee-drinks-dispenser_v2.jpg') }}" alt="drinks dispenser">
         </div>
-        <div class="button-column">
+
+         <div class="button-column">
             {% for drink, details in menu.items() %}
-                <button class="drink-button" onclick="orderDrink('{{ drink }}')">
+                <button class="drink-button" data-drink-price="{{ drink_price[drink] }}" onclick="orderDrink(this, '{{ drink }}')">
                     <div class="drink-button-content">
                         <img class="drink-icon" src="{{ url_for('static', filename='images/icon-' + drink + '.png') }}" alt="{{ drink }}">
                         <span class="button-text">&nbsp{{ drink.capitalize() }}</span>
@@ -15,75 +110,21 @@
                 </button>
             {% endfor %}
         </div>
-        <div class="coin-dispenser">
+
+        <div class="coin-dispenser-container">
             <div class="led-display" id="ledDisplay">Welcome to ITD2 Drinks Dispenser</div>
-            <img src="{{ url_for('static', filename='images/coin-dispenser_variant-horizontal-v1.jpg') }}" alt="coin dispenser">
+            <div class="coin-dispenser-inner">
+                <button class="go-button" onclick="processOrder()">Go!</button>
+                <img src="{{ url_for('static', filename='images/coin-dispenser_variant-horizontal-v1.jpg') }}" alt="coin dispenser">
+            </div>
             <div class="coin-buttons">
                 {% for coin, value in coin_values.items() %}
-                    <button class="coin-button" data-coinValue="{{ value }}">
+                    <button class="coin-button" data-coinvalue="{{ value }}">
                         <img src="{{ url_for('static', filename='images/uscoin-' + coin.lower() + '.png') }}" alt="{{ coin }}">
-                        <span class="coin-text">{{ value }}c</span>
+                        <span class="coin-text">{{ coin }}</span>
                     </button>
                 {% endfor %}
             </div>
         </div>
-    </div>
-
-    <script>
-        const drinkAvailability = {{ drink_availability | tojson }};
-        const coinButtons = document.querySelectorAll('.coin-button');
-        const drinkButtons = document.querySelectorAll('.drink-button');
-        const ledDisplay = document.getElementById('ledDisplay');
-
-        document.addEventListener('DOMContentLoaded', function () {
-            Object.keys(drinkAvailability).forEach(drink => {
-                const button = document.querySelector(`.drink-button[onclick*="${drink}"]`);
-                if (!drinkAvailability[drink]) {
-                    button.classList.add('unavailable');
-                }
-            });
-
-            coinButtons.forEach(button => {
-                button.addEventListener('click', function () {
-                    const coinValue = this.dataset.coinvalue;
-                    ledDisplay.textContent = `You inserted $${coinValue}`;
-
-                    this.classList.add('flashing');
-                    setTimeout(() => {
-                        this.classList.remove('flashing');
-                    }, 1000);
-                });
-            });
-
-            drinkButtons.forEach(button => {
-                button.addEventListener('click', function () {
-                    const drink = this.querySelector('.button-text').textContent.trim();
-                    if (drinkAvailability[drink.toLowerCase()]) {
-                        ledDisplay.textContent = `You have selected ${drink}`;
-                    } else {
-                        ledDisplay.textContent = `${drink} is not available at the moment.`;
-                    }
-
-                    this.classList.add('flashing');
-                    setTimeout(() => {
-                        this.classList.remove('flashing');
-                    }, 1000);
-                });
-            });
-        });
-
-        function orderDrink(drink) {
-            const button = document.querySelector(`.drink-button[onclick*="${drink}"]`);
-            if (drinkAvailability[drink]) {
-                ledDisplay.textContent = `You have selected ${drink}`;
-            } else {
-                ledDisplay.textContent = `${drink} is not available at the moment.`;
-            }
-
-            button.classList.add('flashing');
-            setTimeout(() => {
-                button.classList.remove('flashing');
-            }, 1000);
-        }
-    </script>
-{% endblock %}
+ </div>
+{%endblock %}
