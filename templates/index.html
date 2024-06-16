@@ -64,32 +64,39 @@
     }
 
     function processOrder() {
-        if (selectedDrink) {
-            if (amountPaid >= drinkPrice) {
-                const change = (amountPaid - drinkPrice).toFixed(2);
-                displayMessage(`${selectedDrink.charAt(0).toUpperCase() + selectedDrink.slice(1)} Making - Change: $${change}`);
+    if (selectedDrink) {
+        if (amountPaid >= drinkPrice) {
+            const change = (amountPaid - drinkPrice).toFixed(2);
+            displayMessage(`${selectedDrink.charAt(0).toUpperCase() + selectedDrink.slice(1)} Making - Change: $${change}`);
 
-                // Play coffee grinding sound (use an actual sound file)
-                playSound('path/to/coffee-grinding-sound.mp3');
+            // Play coffee grinding sound (use an actual sound file)
+            playSound('/static/sounds/coffee-grinding-sound.mp3');
+
+            setTimeout(() => {
+                displayMessage(`${selectedDrink.charAt(0).toUpperCase() + selectedDrink.slice(1)} ready: Enjoy!`);
 
                 setTimeout(() => {
-                    displayMessage(`${selectedDrink.charAt(0).toUpperCase() + selectedDrink.slice(1)} ready: Enjoy!`);
+                    resetDisplay();  // Reset display to initial state
+                }, 5000); // Adjust time as needed for how long the "Enjoy" message should be displayed
 
-                    setTimeout(() => {
-                        displayMessage('Welcome to ITD2 Drinks Dispenser');
-                        selectedDrink = null;
-                        amountPaid = 0;
-                        drinkPrice = 0;
-                    }, 5000); // Adjust time as needed for how long the "Enjoy" message should be displayed
-
-                }, 3000); // Adjust time as needed for the coffee making process
-            } else {
-                displayMessage('Insufficient funds. Please add more coins.');
-            }
+            }, 3000); // Adjust time as needed for the coffee making process
         } else {
-            displayMessage('Please select a drink first.');
+            const insufficientAmount = (drinkPrice - amountPaid).toFixed(2);
+            displayMessage(`Order cancelled: $${amountPaid} < $${drinkPrice}`);
+
+            setTimeout(() => {
+                resetDisplay();  // Reset display to initial state after cancellation message
+            }, 3000); // Adjust time as needed for how long the cancellation message should be displayed
         }
+    } else {
+        displayMessage('Please select a drink first.');
     }
+}
+
+    function resetDisplay() {
+    displayMessage('Welcome to ITD2 Drinks Dispenser');
+}
+
 </script>
 
 
