@@ -24,20 +24,17 @@ vending_machine = VendingMachine(materials_capacity, coin_values, menu, drink_pr
 
 @app.route('/')
 def index():
-    available_drinks = [drink for drink in vending_machine.menu.get_drinks() if
-                        vending_machine.check_availability(drink)]
-    drink_availability = {drink: vending_machine.check_availability(drink) for drink in
-                          vending_machine.menu.get_drinks()}
+
+
     # Log the menu
     logger.debug("Menu: %s", menu)
     logger.debug("Drink Prices: %s", drink_price)
+    
     return render_template(
         'index.html',
-        drinks=available_drinks,
         menu=menu,
         drink_price=drink_price,
-        coin_values=coin_values,
-        drink_availability=drink_availability
+        coin_values=coin_values
     )
 
 def safe_int(value, default=0):
@@ -45,6 +42,7 @@ def safe_int(value, default=0):
         return int(value)
     except (ValueError, TypeError):
         return default
+
 
 
 @app.route('/make_drink', methods=['POST'])
@@ -60,6 +58,10 @@ def make_drink():
     else:
         return jsonify({'status': 'error', 'message': 'Insufficient ingredients'}), 400
 
+@app.route('/check_drink_availability', methods=['GET'])
+def check_drink_availability():
+    available_drinks = [drink for drink in menu.keys() if vending_machine.check_availability(drink)]
+    return jsonify({'available_drinks': available_drinks})
 
 @app.route('/order/<drink>', methods=['POST'])
 def order(drink):

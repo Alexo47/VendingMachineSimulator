@@ -2,10 +2,35 @@
 
 {% block content %}
 
+<style>
+    .disabled {
+        pointer-events: none;
+        opacity: 0.5;
+    }
+</style>
+
 <script>
     let selectedDrink = null;
     let drinkPrice = 0;
     let amountPaid = 0;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        checkDrinkAvailability();
+        document.querySelectorAll('.coin-button').forEach(button => {
+            button.addEventListener('click', () => {
+                if (selectedDrink) {
+                    const coinValue = parseFloat(button.dataset.coinvalue);
+                    amountPaid += coinValue;
+                    updateDisplay();
+                } else {
+                    displayMessage('Please select a drink first.');
+                    setTimeout(() => {
+                        resetDisplay();
+                    }, 2000);
+                }
+            });
+        });
+    });
 
     function orderDrink(button, drink) {
         console.log('===orderDrink=> Invoking orderDrink');
@@ -40,36 +65,12 @@
         }
     }
 
-    function resetDisplay() {
-    displayMessage('Welcome to ITD2 Drinks Dispenser');
-    selectedDrink = null;
-    drinkPrice = 0;
-    amountPaid = 0;
-    }
-
-    // Event Listener Setup
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.coin-button').forEach(button => {
-            button.addEventListener('click', () => {
-                if (selectedDrink) {
-                    const coinValue = parseFloat(button.dataset.coinvalue);
-                    amountPaid += coinValue;
-                    updateDisplay();
-                } else {
-                    displayMessage('Please select a drink first.');
-                    setTimeout(() => {
-                        displayMessage('Welcome to ITD2 Drinks Dispenser');
-                    }, 2000);
-                }
-            });
-        });
-    });
-
     function playSound(soundFile) {
         const audio = new Audio(soundFile);
         audio.play();
     }
-function processOrder() {
+
+    function processOrder() {
         if (amountPaid >= drinkPrice) {
             const change = (amountPaid - drinkPrice).toFixed(2);
             displayMessage(`${selectedDrink.charAt(0).toUpperCase() + selectedDrink.slice(1)} Making - Change: $${change}`);
@@ -93,6 +94,7 @@ function processOrder() {
 
                         setTimeout(() => {
                             resetDisplay();  // Reset display to initial state
+                            checkDrinkAvailability(); // Check drink availability after making a drink
                         }, 5000); // Adjust time as needed for how long the "Enjoy" message should be displayed
 
                     }, 3000); // Adjust time as needed for the coffee making process
@@ -116,46 +118,65 @@ function processOrder() {
                 resetDisplay();  // Reset display to initial state after cancellation message
             }, 3000); // Adjust time as needed for how long the cancellation message should be displayed
         }
-}
+    }
 
+    function resetDisplay() {
+        displayMessage('Welcome to ITD2 Drinks Dispenser');
+        selectedDrink = null;
+        drinkPrice = 0;
+        amountPaid = 0;
+    }
 
-
-
+    function checkDrinkAvailability() {
+        fetch('/check_drink_availability')
+        .then(response => response.json())
+        .then(data => {
+            document.querySelectorAll('.drink-button').forEach(button => {
+                const drink = button.getAttribute('onclick').match(/orderDrink\(this, '(\w+)'\)/)[1];
+                if (!data.available_drinks.includes(drink)) {
+                    button.classList.add('disabled');
+                } else {
+                    button.classList.remove('disabled');
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error checking drink availability:', error);
+        });
+    }
 </script>
 
+<div class="container">
+    <div class="vending-panel">
+        <img src="{{ url_for('static', filename='images/coffee-drinks-dispenser_v2.jpg') }}" alt="drinks dispenser">
+    </div>
 
+    <div class="button-column">
+        {% for drink, details in menu.items() %}
+            <button class="drink-button" data-drink-price="{{ drink_price[drink] }}" onclick="orderDrink(this, '{{ drink }}')">
+                <div class="drink-button-content">
+                    <img class="drink-icon" src="{{ url_for('static', filename='images/icon-' + drink + '.png') }}" alt="{{ drink }}">
+                    <span class="button-text">&nbsp{{ drink.capitalize() }}</span>
+                </div>
+            </button>
+        {% endfor %}
+    </div>
 
-
- <div class="container">
-        <div class="vending-panel">
-            <img src="{{ url_for('static', filename='images/coffee-drinks-dispenser_v2.jpg') }}" alt="drinks dispenser">
+    <div class="coin-dispenser-container">
+        <div class="led-display" id="ledDisplay">Welcome to ITD2 Drinks Dispenser</div>
+        <div class="coin-dispenser-inner">
+            <button class="go-button" onclick="processOrder()">Go!</button>
+            <img src="{{ url_for('static', filename='images/coin-dispenser_variant-horizontal-v1.jpg') }}" alt="coin dispenser">
         </div>
-
-         <div class="button-column">
-            {% for drink, details in menu.items() %}
-                <button class="drink-button" data-drink-price="{{ drink_price[drink] }}" onclick="orderDrink(this, '{{ drink }}')">
-                    <div class="drink-button-content">
-                        <img class="drink-icon" src="{{ url_for('static', filename='images/icon-' + drink + '.png') }}" alt="{{ drink }}">
-                        <span class="button-text">&nbsp{{ drink.capitalize() }}</span>
-                    </div>
+        <div class="coin-buttons">
+            {% for coin, value in coin_values.items() %}
+                <button class="coin-button" data-coinvalue="{{ value }}">
+                    <img src="{{ url_for('static', filename='images/uscoin-' + coin.lower() + '.png') }}" alt="{{ coin }}">
+                    <span class="coin-text">{{ coin }}</span>
                 </button>
             {% endfor %}
         </div>
+    </div>
+</div>
 
-        <div class="coin-dispenser-container">
-            <div class="led-display" id="ledDisplay">Welcome to ITD2 Drinks Dispenser</div>
-            <div class="coin-dispenser-inner">
-                <button class="go-button" onclick="processOrder()">Go!</button>
-                <img src="{{ url_for('static', filename='images/coin-dispenser_variant-horizontal-v1.jpg') }}" alt="coin dispenser">
-            </div>
-            <div class="coin-buttons">
-                {% for coin, value in coin_values.items() %}
-                    <button class="coin-button" data-coinvalue="{{ value }}">
-                        <img src="{{ url_for('static', filename='images/uscoin-' + coin.lower() + '.png') }}" alt="{{ coin }}">
-                        <span class="coin-text">{{ coin }}</span>
-                    </button>
-                {% endfor %}
-            </div>
-        </div>
- </div>
-{%endblock %}
+{% endblock %}
