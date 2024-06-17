@@ -29,3 +29,165 @@ nav a {
 .danger {
     color: red;
 }
+
+/* Include the CSS styles from vending-panel.html here */
+        .container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+        }
+
+        .vending-panel {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          margin-right: 10px;
+        }
+
+        .vending-panel img {
+          width: 150px;
+          height: auto;
+
+        }
+
+        .button-column {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          align-items: center;
+          margin-right: 50px;
+        }
+
+        .button-text {
+          font-size: 0.75rem;
+        }
+
+        .drink-icon {
+          font-size: 3rem;
+          display: block;
+          margin: 0 auto;
+        }
+
+        .drink-button {
+          text-align: center;
+          width: 80px;
+          margin: 0px;
+          border: none;
+          background: none;
+          padding: 0px;
+          border-radius: 50%;
+          transition: background-color 0.3s, border-color 0.3s;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+
+        .drink-button img {
+          width: 36px;
+          height: auto;
+          border-radius: 50%;
+          padding: 10px;
+          background-color: lightgreen;
+          border: 2px solid green;
+        }
+
+        .drink-button.unavailable img {
+          background-color: grey;
+          border-color: grey;
+        }
+
+        .drink-button-content {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .coin-dispenser-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .coin-dispenser-inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .go-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: inline-block;
+            background-color: red;
+            color: white;
+            font-weight: bold;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 14px;
+            line-height: 40px;
+            text-align: center;
+        }
+
+        .led-display {
+          width: 240px;
+          height: 40px;
+          background-color: black;
+          color: lime;
+          text-align: center;
+          line-height: 40px;
+          font-family: 'Courier New', Courier, monospace;
+          font-size: 0.75rem;
+          margin-bottom: 20px;
+          border-radius: 5px;
+          border: 2px solid #555;
+        }
+
+        .coin-dispenser img {
+          width: 100px;
+          height: auto;
+        }
+
+        .coin-buttons {
+          display: flex;
+          flex-direction: row;
+          gap: 10px;
+          justify-content: center;
+          margin-top: 10px;
+        }
+
+        .coin-button {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 5px;
+          border-radius: 50%;
+          border: 1px solid lightgray;
+          transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .coin-button img {
+          width: 30px;
+          height: auto;
+        }
+
+        .coin-text {
+          font-size: 0.75rem;
+        }
+
+
+
+        @keyframes flash {
+          0% { background-color: yellow; }
+          50% { background-color: red; }
+          100% { background-color: yellow; }
+        }
+
+        .flashing {
+          animation: flash 0.5s linear 2;
+        }
