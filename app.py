@@ -1,6 +1,6 @@
 import logging
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from flask_debugtoolbar import DebugToolbarExtension
+# from flask_debugtoolbar import DebugToolbarExtension
 from vending_machine.vending_machine import VendingMachine
 
 # Assuming vending_machine_data.py is a Python file
@@ -14,7 +14,7 @@ from vending_machine.vending_machine_data import (
 app = Flask(__name__)
 app.config['DEBUG'] = True  # Set debug mode to True
 app.secret_key = 'your_secret_key'
-toolbar = DebugToolbarExtension(app)
+# toolbar = DebugToolbarExtension(app)
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -45,6 +45,21 @@ def safe_int(value, default=0):
         return int(value)
     except (ValueError, TypeError):
         return default
+
+
+@app.route('/make_drink', methods=['POST'])
+def make_drink():
+    data = request.json
+    drink = data.get('drink')
+    
+    if not drink:
+        return jsonify({'status': 'error', 'message': 'No drink specified'}), 400
+    
+    if vending_machine.make_drink(drink):
+        return jsonify({'status': 'success', 'message': f'{drink.capitalize()} is being made'})
+    else:
+        return jsonify({'status': 'error', 'message': 'Insufficient ingredients'}), 400
+
 
 @app.route('/order/<drink>', methods=['POST'])
 def order(drink):
