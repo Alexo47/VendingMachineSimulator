@@ -131,19 +131,29 @@
         fetch('/check_drink_availability')
         .then(response => response.json())
         .then(data => {
-            document.querySelectorAll('.drink-button').forEach(button => {
-                const drink = button.getAttribute('onclick').match(/orderDrink\(this, '(\w+)'\)/)[1];
-                if (!data.available_drinks.includes(drink)) {
+            if (data.maintenance) {
+                const maintenanceMessage = data.message || 'No drinks - Maintenance required';
+                displayMessage(maintenanceMessage);
+                document.querySelectorAll('.drink-button').forEach(button => {
                     button.classList.add('disabled');
-                } else {
-                    button.classList.remove('disabled');
-                }
-            });
+                });
+            } else {
+                document.querySelectorAll('.drink-button').forEach(button => {
+                    const drink = button.getAttribute('onclick').match(/orderDrink\(this, '(\w+)'\)/)[1];
+                    if (!data.available_drinks.includes(drink)) {
+                        button.classList.add('disabled');
+                    } else {
+                        button.classList.remove('disabled');
+                    }
+                });
+            }
         })
         .catch(error => {
             console.error('Error checking drink availability:', error);
         });
     }
+
+
 </script>
 
 <div class="container">
@@ -153,7 +163,7 @@
 
     <div class="button-column">
         {% for drink, details in menu.items() %}
-            <button class="drink-button" data-drink-price="{{ drink_price[drink] }}" onclick="orderDrink(this, '{{ drink }}')">
+            <button class="drink-button" data-drink="{{ drink }}" data-drink-price="{{ drink_price[drink] }}" onclick="orderDrink(this, '{{ drink }}')">
                 <div class="drink-button-content">
                     <img class="drink-icon" src="{{ url_for('static', filename='images/icon-' + drink + '.png') }}" alt="{{ drink }}">
                     <span class="button-text">&nbsp{{ drink.capitalize() }}</span>

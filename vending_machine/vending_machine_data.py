@@ -1,5 +1,5 @@
 materials_capacity = {
-  "coffee": 1000,  # Grams of coffee beans
+  "coffee": 70,  # Grams of coffee beans
   "sugar": 500,     # Grams of sugar
   "milk": 250,    # Milliliters of milk
   "water": 3000,    # Milliliters of water

@@ -55,30 +55,34 @@ class VendingMachine:
         self.coin_dispenser = AcceptedCoinsDispenser(coin_values)
         self.menu = DrinksMenu(menu)
         self.drink_price = drink_price
+        self.is_shutdown = False  # To track if the machine is shutdown
 
     def check_availability(self, drink):
         ingredients = self.menu.get_ingredients(drink)
         available = all(self.dispenser[material].get_volume() >= amount for material, amount in ingredients.items())
         logging.debug(f"Check availability for {drink}: {available}")
         return available
+    
+    def check_maintenance(self):
+        for drink in self.menu.get_drinks():
+            if self.check_availability(drink):
+                return False  # At least one drink is available
+        self.is_shutdown = True
+        return True  # No drinks available, enter maintenance mode
 
     def make_drink(self, drink):
-        logging.debug(f"Making Drink Method initiated")
-        if self.check_availability(drink):
-            ingredients = self.menu.get_ingredients(drink)
-            for material, amount in ingredients.items():
-                if not self.dispenser[material].use(amount):
-                    logging.error(f"Failed to use {amount} of {material}. Rolling back.")
-                    return False
-            logging.debug(f"{drink} made successfully")
-            return True
-        logging.error(f"Insufficient ingredients to make {drink}")
-        return False
+        if not self.check_availability(drink):
+            return False
+        ingredients = self.menu.get_ingredients(drink)
+        for material, amount in ingredients.items():
+            self.dispenser[material].use(amount)
+        return True
 
     def refill(self):
-        for material in self.dispenser.values():
-            material.refill()
-        logging.debug("All materials refilled")
+        for dispenser in self.dispenser.values():
+            dispenser.refill()
+        self.is_shutdown = False
+        logging.debug("Machine refilled and restarted")
 
     def process_payment(self, drink, payment):
         if drink not in self.drink_price:
