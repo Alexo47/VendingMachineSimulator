@@ -1,7 +1,7 @@
 materials_capacity = {
   "coffee": 70,  # Grams of coffee beans
   "sugar": 500,     # Grams of sugar
-  "milk": 250,    # Milliliters of milk
+  "milk": 255,    # Milliliters of milk
   "water": 3000,    # Milliliters of water
   # ... other materials and their capacities
 }
@@ -16,3 +16,6 @@ menu = {
 	
 }
 drink_price = {'expresso': 1.5, 'latte': 2.5, 'cappuccino': 3.0}
+
+vending_machine_states = ["in_operation", "in_maintenance"]
+vending_machine_current_state = vending_machine_states[1]

@@ -8,11 +8,11 @@
         opacity: 0.5;
     }
 </style>
-
 <script>
     let selectedDrink = null;
     let drinkPrice = 0;
     let amountPaid = 0;
+    let isProcessingOrder = false;
 
     document.addEventListener('DOMContentLoaded', () => {
         checkDrinkAvailability();
@@ -30,19 +30,29 @@
                 }
             });
         });
+
+        const goButton = document.querySelector('.go-button');
+        if (goButton) {
+            goButton.addEventListener('click', () => {
+                if (!isProcessingOrder) {
+                    if ("{{ current_state }}" === "in_operation") {
+                        processOrder();
+                    } else if ("{{ current_state }}" === "in_maintenance") {
+                        initializeMachine();
+                    }
+                }
+            });
+        }
     });
 
     function orderDrink(button, drink) {
-        console.log('===orderDrink=> Invoking orderDrink');
-        drinkPrice = parseFloat(button.dataset.drinkPrice);  // Update the global drinkPrice variable
-        console.log('===orderDrink=>Drink price:', drinkPrice);
+        drinkPrice = parseFloat(button.dataset.drinkPrice);
         if (isNaN(drinkPrice)) {
             console.error("Drink price not found or invalid for:", drink);
             return;
         }
 
         selectedDrink = drink;
-        console.log('===orderDrink=>Selected drink:', selectedDrink);
         amountPaid = 0;
         displayMessage(`You have selected ${drink.charAt(0).toUpperCase() + drink.slice(1)}`);
         setTimeout(() => {
@@ -58,10 +68,6 @@
     function updateDisplay() {
         if (selectedDrink) {
             displayMessage(`${selectedDrink.charAt(0).toUpperCase() + selectedDrink.slice(1)}/${drinkPrice.toFixed(2)} <= ${amountPaid.toFixed(2)}`);
-            console.log('===updateDisplay=> Updated display:');
-            console.log('===updateDisplay=> Selected drink:', selectedDrink);
-            console.log('===updateDisplay=> Drink price:', drinkPrice);
-            console.log('===updateDisplay=> Amount paid:', amountPaid);
         }
     }
 
@@ -71,52 +77,57 @@
     }
 
     function processOrder() {
-        if (amountPaid >= drinkPrice) {
-            const change = (amountPaid - drinkPrice).toFixed(2);
-            displayMessage(`${selectedDrink.charAt(0).toUpperCase() + selectedDrink.slice(1)} Making - Change: $${change}`);
+        if (selectedDrink) {
+            if (amountPaid >= drinkPrice) {
+                const change = (amountPaid - drinkPrice).toFixed(2);
+                displayMessage(`${selectedDrink.charAt(0).toUpperCase() + selectedDrink.slice(1)} Making - Change: $${change}`);
 
-            // Call make_drink on the backend
-            fetch('/make_drink', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ drink: selectedDrink })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Play coffee grinding sound (use an actual sound file)
-                    playSound('/static/sounds/coffee-grinding-sound.mp3');
+                isProcessingOrder = true;
+                document.querySelector('.go-button').classList.add('disabled');
 
-                    setTimeout(() => {
-                        displayMessage(`${selectedDrink.charAt(0).toUpperCase() + selectedDrink.slice(1)} ready: Enjoy!`);
+                fetch('/make_drink', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ drink: selectedDrink })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        playSound('/static/sounds/coffee-grinding-sound.mp3');
 
                         setTimeout(() => {
-                            resetDisplay();  // Reset display to initial state
-                            checkDrinkAvailability(); // Check drink availability after making a drink
-                        }, 5000); // Adjust time as needed for how long the "Enjoy" message should be displayed
+                            displayMessage(`${selectedDrink.charAt(0).toUpperCase() + selectedDrink.slice(1)} ready: Enjoy!`);
 
-                    }, 3000); // Adjust time as needed for the coffee making process
-                } else {
-                    displayMessage(`Order cancelled: ${data.message}`);
+                            setTimeout(() => {
+                                resetDisplay();
+                                checkDrinkAvailability();
+                            }, 5000);
+
+                        }, 3000);
+                    } else {
+                        displayMessage(`Order cancelled: ${data.message}`);
+                        setTimeout(() => {
+                            resetDisplay();
+                        }, 3000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    displayMessage('Order cancelled: Internal error');
                     setTimeout(() => {
-                        resetDisplay();  // Reset display to initial state after cancellation message
-                    }, 3000); // Adjust time as needed for how long the cancellation message should be displayed
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                displayMessage('Order cancelled: Internal error');
+                        resetDisplay();
+                    }, 3000);
+                });
+            } else {
+                displayMessage(`Order cancelled: $${amountPaid} < $${drinkPrice}`);
                 setTimeout(() => {
-                    resetDisplay();  // Reset display to initial state after error message
-                }, 3000); // Adjust time as needed for how long the error message should be displayed
-            });
+                    resetDisplay();
+                }, 3000);
+            }
         } else {
-            displayMessage(`Order cancelled: $${amountPaid} < $${drinkPrice}`);
-            setTimeout(() => {
-                resetDisplay();  // Reset display to initial state after cancellation message
-            }, 3000); // Adjust time as needed for how long the cancellation message should be displayed
+            displayMessage('Please select a drink first.');
         }
     }
 
@@ -125,18 +136,21 @@
         selectedDrink = null;
         drinkPrice = 0;
         amountPaid = 0;
+        isProcessingOrder = false;
+        document.querySelector('.go-button').classList.remove('disabled');
     }
 
     function checkDrinkAvailability() {
         fetch('/check_drink_availability')
         .then(response => response.json())
         .then(data => {
-            if (data.maintenance) {
-                const maintenanceMessage = data.message || 'No drinks - Maintenance required';
-                displayMessage(maintenanceMessage);
+            if (data.current_state === "in_maintenance" || data.available_drinks.length === 0) {
+                displayMessage("No drinks - Maintenance required");
                 document.querySelectorAll('.drink-button').forEach(button => {
                     button.classList.add('disabled');
                 });
+                isProcessingOrder = false;
+                document.querySelector('.go-button').classList.remove('disabled'); // Ensure the Go button is enabled for maintenance
             } else {
                 document.querySelectorAll('.drink-button').forEach(button => {
                     const drink = button.getAttribute('onclick').match(/orderDrink\(this, '(\w+)'\)/)[1];
@@ -146,6 +160,8 @@
                         button.classList.remove('disabled');
                     }
                 });
+                isProcessingOrder = false;
+                document.querySelector('.go-button').classList.remove('disabled');
             }
         })
         .catch(error => {
@@ -153,7 +169,30 @@
         });
     }
 
-
+    function initializeMachine() {
+        displayMessage('Reinitializing...');
+        fetch('/admin/refill')
+        .then(response => {
+            if (response.ok) {
+                setTimeout(() => {
+                    resetDisplay();
+                    checkDrinkAvailability();
+                }, 2000);
+            } else {
+                displayMessage('Failed to reinitialize');
+                setTimeout(() => {
+                    resetDisplay();
+                }, 2000);
+            }
+        })
+        .catch(error => {
+            console.error('Error reinitializing machine:', error);
+            displayMessage('Failed to reinitialize');
+            setTimeout(() => {
+                resetDisplay();
+            }, 2000);
+        });
+    }
 </script>
 
 <div class="container">
