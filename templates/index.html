@@ -13,6 +13,7 @@
     let drinkPrice = 0;
     let amountPaid = 0;
     let isProcessingOrder = false;
+    let currentState = "{{ current_state }}";
 
     document.addEventListener('DOMContentLoaded', () => {
         checkDrinkAvailability();
@@ -35,9 +36,9 @@
         if (goButton) {
             goButton.addEventListener('click', () => {
                 if (!isProcessingOrder) {
-                    if ("{{ current_state }}" === "in_operation") {
+                    if (currentState === "in_operation") {
                         processOrder();
-                    } else if ("{{ current_state }}" === "in_maintenance") {
+                    } else if (currentState === "in_maintenance") {
                         initializeMachine();
                     }
                 }
@@ -144,13 +145,15 @@
         fetch('/check_drink_availability')
         .then(response => response.json())
         .then(data => {
-            if (data.current_state === "in_maintenance" || data.available_drinks.length === 0) {
+            currentState = data.current_state; // Update the currentState variable
+            if (currentState === "in_maintenance" || data.available_drinks.length === 0) {
+                currentState = "in_maintenance";
                 displayMessage("No drinks - Maintenance required");
                 document.querySelectorAll('.drink-button').forEach(button => {
                     button.classList.add('disabled');
                 });
+                document.querySelector('.go-button').classList.remove('disabled');
                 isProcessingOrder = false;
-                document.querySelector('.go-button').classList.remove('disabled'); // Ensure the Go button is enabled for maintenance
             } else {
                 document.querySelectorAll('.drink-button').forEach(button => {
                     const drink = button.getAttribute('onclick').match(/orderDrink\(this, '(\w+)'\)/)[1];
@@ -214,7 +217,7 @@
     <div class="coin-dispenser-container">
         <div class="led-display" id="ledDisplay">Welcome to ITD2 Drinks Dispenser</div>
         <div class="coin-dispenser-inner">
-            <button class="go-button" onclick="processOrder()">Go!</button>
+            <button class="go-button">Go!</button>
             <img src="{{ url_for('static', filename='images/coin-dispenser_variant-horizontal-v1.jpg') }}" alt="coin dispenser">
         </div>
         <div class="coin-buttons">

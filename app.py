@@ -44,7 +44,7 @@ def index():
         menu=menu,
         drink_price=drink_price,
         coin_values=coin_values,
-        current_state=vending_machine_current_state,
+        current_state=vending_machine.get_state(),  # Ensure current state is passed
         possible_states=vending_machine_states
     )
 
